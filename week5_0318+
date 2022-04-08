@@ -1,0 +1,92 @@
+#include<opencv2/opencv.hpp>
+#include<iostream>
+#include<math.h>
+using namespace cv;
+using namespace std;
+
+int main()
+{
+	Mat src = imread("dark.jpg", cv::IMREAD_GRAYSCALE);	// 灰階圖
+	Mat src2 = imread("target.jpg", cv::IMREAD_GRAYSCALE);
+	Mat dst = Mat::zeros(src.rows, src.cols, CV_8UC1);
+	// Filling your code here
+	int row = src.rows;
+	int column = src.cols;
+	int row2 = src2.rows;
+	int column2 = src2.cols;
+
+	double pixel = 0;
+	double pixel2 = 0;
+
+	double nums[256] = { 0 };
+	double nums2[256] = { 0 };
+
+	double prob[256] = { 0 };
+	double prob2[256] = { 0 };
+
+	double px[256] = { 0 };
+	double px2[256] = { 0 };
+
+	double cdfx[256] = { 0 };
+	double cdfx2[256] = { 0 };
+	int color = 0;
+	for (int i = 2; i < row - 2; i++) {
+		for (int j = 2; j < column - 2; j++) {
+			color = src.at<uchar>(i, j);
+			nums[color] += 1;
+			pixel++;
+		}
+	}
+	for (int i = 0; i < 256; i++) {
+		prob[i] = nums[i] / pixel;
+	}
+	for (int i = 0; i < 256; i++) {
+		for (int j = 0; j <= i; j++) {
+			px[i] += prob[j];
+		}
+		cdfx[i] = px[i];
+	}
+
+	int color2 = 0;
+	for (int i = 2; i < row2 - 2; i++) {
+		for (int j = 2; j < column2 - 2; j++) {
+			color2 = src2.at<uchar>(i, j);
+			nums2[color2] += 1;
+			pixel2++;
+		}
+	}
+	for (int i = 0; i < 256; i++) {
+		prob2[i] = nums2[i] / pixel2;
+	}
+	for (int i = 0; i < 256; i++) {
+		for (int j = 0; j <= i; j++) {
+			px2[i] += prob2[j];
+		}
+		cdfx2[i] = px2[i];
+	}
+	int ori;
+	double cdf1 = 0;
+	double cvt = 0;
+	for (int i = 2; i < row - 2; i++) {
+		for (int j = 2; j < column - 2; j++) {
+			ori = src.at<uchar>(i, j); //src pixel
+			cdf1 = cdfx[ori];
+			for (int k = 0; k < 256; k++) {
+				if (cdf1 <= cdfx2[k]) {
+					cvt = k;
+					break;
+				}
+			}
+			dst.at<uchar>(i, j) = cvt;
+		}
+	}
+
+
+	
+
+
+	imshow("src", src);
+	imshow("src2", src2);
+	imshow("dst", dst);
+	waitKey();
+}
