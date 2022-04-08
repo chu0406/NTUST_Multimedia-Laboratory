@@ -1,0 +1,50 @@
+#include<opencv2/opencv.hpp>
+#include<iostream>
+#include<math.h>
+using namespace cv;
+using namespace std;
+
+int main()
+{
+	Mat src = imread("bright.jpg", cv::IMREAD_GRAYSCALE);	// 灰階圖
+	//Mat src = imread("dark.jpg", cv::IMREAD_GRAYSCALE);
+	Mat dst = Mat::zeros(src.rows, src.cols, CV_8UC1);
+	// Filling your code here
+	int row = src.rows;
+	int column = src.cols;
+	double pixel = 0;
+	double nums[256] = { 0 };
+	double prob[256] = { 0 };
+	double px[256] = { 0 };
+	double cdfx[256] = { 0 };
+	int color = 0;
+	for (int i = 2; i < row - 2; i++) {
+		for (int j = 2; j < column - 2; j++) {
+			color = src.at<uchar>(i, j);
+			nums[color] += 1;
+			pixel++;
+		}
+	}
+	for (int i = 0; i < 256; i++) {
+		prob[i] = nums[i] / pixel;
+	}
+	for (int i = 0; i < 256; i++) {
+		for (int j = 0; j <= i; j++) {
+			px[i] += prob[j];
+		}
+		cdfx[i] = px[i];
+	}
+	int ori;
+	int newcolor = 0;
+	for (int i = 2; i < row - 2; i++) {
+		for (int j = 2; j < column - 2; j++) {
+			ori = src.at<uchar>(i, j);
+			dst.at<uchar>(i, j) = cdfx[ori] * 255;
+		}
+	}
+
+
+	imshow("src", src);
+	imshow("dst", dst);
+	waitKey();
+}
