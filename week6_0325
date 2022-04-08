@@ -1,53 +1,45 @@
+
 #include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include<iostream>
 using namespace std;
 using namespace cv;
 
+Mat getElement(int erosion_size) {
+	return getStructuringElement(cv::MORPH_ELLIPSE, Size(2 * erosion_size + 1, 2 * erosion_size + 1), Point(erosion_size, erosion_size));
+}
 int main()
 {
 	Mat img = imread("image.jpg", IMREAD_GRAYSCALE);
-	//img.copyTo(target);
 	double scale = 0.2;
 	// 圖片太大先縮小
 	resize(img, img, Size(0, 0), scale, scale);
 	Mat target = Mat::zeros(img.rows, img.cols, img.type());
-
 	// do something
-	int row = img.rows;
-	int column = img.cols;
-	int pixel = 0;
-	int color = 0;
-	for (int i = 0; i < row; i++) {
-		for (int j = 0; j < column; j++) {
-			color = img.at<uchar>(i, j);
-			if (color > 120)target.at<uchar>(i, j) = 0;
-			else target.at<uchar>(i, j) = 255;
-		}
+	//blur
+	Mat out;
+	blur(img, out, Size(3, 3));
+	for (int i = 0; i < 100; i++) {
+		blur(out, out, Size(3, 3));
 	}
-	imshow("target1", target);
-	Mat img2;
-	threshold(target, img2, 120, 255, THRESH_BINARY);
-	Mat dst1;
-	Mat dst2;
-	Mat dst3;
-	Mat erodeStruct = getStructuringElement(MORPH_RECT, Size(3, 3));
 
-	Mat image_eroded_with_3x3_kernel;
-	for (int i = 0; i < 200; i++) {
-		erode(target, dst1, erodeStruct);
-		//erode(target, image_eroded_with_3x3_kernel, getStructuringElement(MORPH_RECT, Size(3, 3)));
-		dilate(target, dst2, Mat());
-	}
-	
-	
-	erode(img, image_eroded_with_3x3_kernel, getStructuringElement(MORPH_RECT, Size(3, 3)));
-	imshow("target2", target);
-
-	//system("PAUSE");
-
+	threshold(out, out, 50, 255, THRESH_BINARY_INV);
+    int time;
+    int direction = 1;
+    for (int k = 0; k < 1; k++)
+    {
+        for (int i = 20; i < img.rows - 21; i++)
+        {
+            for (int j = 20; j < img.cols - 21; j++)
+            {
+                eroding_new.at<uchar>(i, j) = erode1(eroding, i, j);
+            }
+        }
 	Mat labels;
 	int number_labels = connectedComponents(target, labels);
 	cout << "共有: " << number_labels - 1;
-	imshow("numbers:" + to_string(number_labels - 1), img);
+	imshow("numbers:" + to_string(number_labels - 1), target);
 	waitKey(0);
 }
